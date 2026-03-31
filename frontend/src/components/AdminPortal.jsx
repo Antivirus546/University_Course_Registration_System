@@ -15,7 +15,8 @@ const DEPARTMENTS = [
 
 export default function AdminPortal() {
   const [activeTab, setActiveTab] = useState('add'); // 'add', 'students', 'courses'
-  const [formData, setFormData] = useState({ courseId: '', title: '', deptName: DEPARTMENTS[0], credits: 3, semesterType: 1 });
+  const [formData, setFormData] = useState({ courseId: '', title: '', deptName: DEPARTMENTS[0], credits: 3, semesterType: 1, prereqId: '' });
+  const [allCourses, setAllCourses] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   
   const [students, setStudents] = useState([]);
@@ -23,6 +24,11 @@ export default function AdminPortal() {
   const [dataLoading, setDataLoading] = useState(false);
   const [studentSemFilter, setStudentSemFilter] = useState('All');
   const [courseSemFilter, setCourseSemFilter] = useState('All');
+
+  // Load all courses on mount (for prerequisite dropdown)
+  useEffect(() => {
+    api.getAllAdminCourses().then(setAllCourses).catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (activeTab === 'students') {
@@ -60,9 +66,10 @@ export default function AdminPortal() {
     e.preventDefault();
     try {
       setIsLoading(true);
-      await api.addCourse(formData.courseId, formData.title, formData.deptName, formData.credits, formData.semesterType);
-      toast.success(`Course ${formData.courseId} Added to Semester ${formData.semesterType}!`, { icon: '✅' });
-      setFormData({ courseId: '', title: '', deptName: DEPARTMENTS[0], credits: 3, semesterType: 1 });
+      await api.addCourse(formData.courseId, formData.title, formData.deptName, formData.credits, formData.semesterType, formData.prereqId);
+      const prereqMsg = formData.prereqId ? ` (Prereq: ${formData.prereqId})` : '';
+      toast.success(`Course ${formData.courseId} Added to Semester ${formData.semesterType}${prereqMsg}!`, { icon: '✅' });
+      setFormData({ courseId: '', title: '', deptName: DEPARTMENTS[0], credits: 3, semesterType: 1, prereqId: '' });
     } catch (err) {
       toast.error(err.message);
     } finally {
@@ -166,6 +173,22 @@ export default function AdminPortal() {
                onChange={(e) => setFormData({...formData, deptName: e.target.value})}
              >
                {DEPARTMENTS.map(d => <option key={d} value={d}>{d}</option>)}
+             </select>
+          </div>
+
+          <div>
+             <label className="block text-sm font-semibold text-slate-400 mb-1">
+               Prerequisite <span className="text-slate-500 font-normal">(optional)</span>
+             </label>
+             <select
+               className="w-full px-4 py-2 bg-slate-900/60 border border-slate-700/80 rounded-lg focus:ring-2 focus:ring-emerald-500/80 transition-all text-slate-200 text-sm"
+               value={formData.prereqId}
+               onChange={(e) => setFormData({...formData, prereqId: e.target.value})}
+             >
+               <option value="">— None —</option>
+               {allCourses.map(c => (
+                 <option key={c.courseId} value={c.courseId}>{c.courseId} — {c.title}</option>
+               ))}
              </select>
           </div>
 

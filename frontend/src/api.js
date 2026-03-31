@@ -23,11 +23,11 @@ export const api = {
     return data;
   },
 
-  addCourse: async (courseId, title, deptName, credits, semesterType) => {
+  addCourse: async (courseId, title, deptName, credits, semesterType, prereqId) => {
     const res = await fetch(`${API_BASE}/courses`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ courseId, title, deptName, credits: credits.toString(), semesterType })
+      body: JSON.stringify({ courseId, title, deptName, credits: credits.toString(), semesterType, prereqId: prereqId || '' })
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || 'Add Course failed');

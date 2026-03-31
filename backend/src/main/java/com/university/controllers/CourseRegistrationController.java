@@ -78,7 +78,8 @@ public class CourseRegistrationController {
         try {
             int credits = Integer.parseInt(request.get("credits"));
             int semesterRaw = Integer.parseInt(semesterType);
-            dao.addCourse(courseId, title, deptName, credits, semesterRaw);
+            String prereqId = request.getOrDefault("prereqId", "");
+            dao.addCourse(courseId, title, deptName, credits, semesterRaw, prereqId);
             return ResponseEntity.ok(Map.of("message", "Course Added Successfully!"));
         } catch (NumberFormatException e) {
             return ResponseEntity.badRequest().body(Map.of("message", "Credits and Semester must be a number"));

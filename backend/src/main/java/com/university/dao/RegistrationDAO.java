@@ -52,15 +52,16 @@ public class RegistrationDAO {
         }
     }
 
-    public void addCourse(String courseId, String title, String deptName, int credits, int semester) throws SQLException {
+    public void addCourse(String courseId, String title, String deptName, int credits, int semester, String prereqId) throws SQLException {
         String q1 = "INSERT INTO Course (course_id, title, dept_name, credits) VALUES (?, ?, ?, ?)";
         String q2 = "INSERT INTO Section (course_id, sec_id, semester, year, instructor_id, time_slot_id, capacity, enrolled) VALUES (?, '1', ?, 2026, '101', 'T1', 60, 0)";
-        
+        String q3 = "INSERT INTO Prereq (course_id, prereq_id) VALUES (?, ?)";
+
         try (Connection conn = DatabaseConnection.getConnection()) {
             conn.setAutoCommit(false);
             try (PreparedStatement stmt1 = conn.prepareStatement(q1);
                  PreparedStatement stmt2 = conn.prepareStatement(q2)) {
-                
+
                 stmt1.setString(1, courseId);
                 stmt1.setString(2, title);
                 stmt1.setString(3, deptName);
@@ -70,7 +71,16 @@ public class RegistrationDAO {
                 stmt2.setString(1, courseId);
                 stmt2.setInt(2, semester);
                 stmt2.executeUpdate();
-                
+
+                // Optionally insert prerequisite
+                if (prereqId != null && !prereqId.trim().isEmpty()) {
+                    try (PreparedStatement stmt3 = conn.prepareStatement(q3)) {
+                        stmt3.setString(1, courseId);
+                        stmt3.setString(2, prereqId.trim().toUpperCase());
+                        stmt3.executeUpdate();
+                    }
+                }
+
                 conn.commit();
             } catch (SQLException e) {
                 conn.rollback();
