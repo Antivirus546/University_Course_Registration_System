@@ -1,0 +1,22 @@
+spring.application.name=CourseRegistrationSystem
+server.port=8080
+
+# =============================================
+# Oracle Database Configuration
+# Copy this file to application.properties
+# and fill in YOUR local Oracle settings.
+# Do NOT commit application.properties to git.
+# =============================================
+spring.datasource.url=jdbc:oracle:thin:@YOUR_DB_HOST:1521:XE
+spring.datasource.username=YOUR_ORACLE_USERNAME
+spring.datasource.password=YOUR_ORACLE_PASSWORD
+spring.datasource.driver-class-name=oracle.jdbc.OracleDriver
+
+# Connection pool
+spring.datasource.hikari.maximum-pool-size=5
+spring.datasource.hikari.connection-timeout=20000
+
+# =============================================
+# Frontend API Base URL (edit in frontend/src/api.js)
+# Change API_BASE to http://YOUR_BACKEND_HOST:8080/api
+# =============================================

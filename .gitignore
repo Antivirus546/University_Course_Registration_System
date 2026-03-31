@@ -13,6 +13,28 @@ backend/target/
 backend/.env
 backend/*.jar
 
+# Credentials - keep out of version control
+backend/src/main/resources/application.properties
+
+# IDE / OS files
+.idea/
+*.iml
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+frontend/.env
+frontend/.env.local
+
+# ===========================
+# Backend (Spring Boot/Maven)
+# ===========================
+backend/target/
+backend/.env
+backend/*.jar
+
 # IDE / OS files
 .idea/
 *.iml
