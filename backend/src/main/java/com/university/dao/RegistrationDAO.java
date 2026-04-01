@@ -40,15 +40,63 @@ public class RegistrationDAO {
         return null;
     }
 
-    public void registerStudent(String id, String name, String branchName, int semester) throws SQLException {
-        String query = "INSERT INTO Student (ID, name, branch_name, current_semester) VALUES (?, ?, ?, ?)";
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
-            stmt.setString(1, id);
-            stmt.setString(2, name);
-            stmt.setString(3, branchName);
-            stmt.setInt(4, semester);
-            stmt.executeUpdate();
+    public void registerStudent(String id, String name, String branchName, int semester, List<String> completedCourseIds) throws SQLException {
+        String qStudent = "INSERT INTO Student (ID, name, branch_name, current_semester) VALUES (?, ?, ?, ?)";
+        String qCheckGhost = "SELECT COUNT(*) FROM Section WHERE course_id = ? AND sec_id = '0' AND semester = 1 AND year = 2025";
+        String qInsertGhost = "INSERT INTO Section (course_id, sec_id, semester, year, instructor_id, time_slot_id, capacity, enrolled) VALUES (?, '0', 1, 2025, NULL, NULL, 999, 0)";
+        String qInsertTakes = "INSERT INTO Takes (ID, course_id, sec_id, semester, year, grade) VALUES (?, ?, '0', 1, 2025, 'A')";
+
+        Connection conn = null;
+        try {
+            conn = DatabaseConnection.getConnection();
+            conn.setAutoCommit(false);
+            
+            try (PreparedStatement stmtStudent = conn.prepareStatement(qStudent)) {
+                stmtStudent.setString(1, id);
+                stmtStudent.setString(2, name);
+                stmtStudent.setString(3, branchName);
+                stmtStudent.setInt(4, semester);
+                stmtStudent.executeUpdate();
+            }
+
+            if (completedCourseIds != null && !completedCourseIds.isEmpty()) {
+                try (PreparedStatement stmtCheckGhost = conn.prepareStatement(qCheckGhost);
+                     PreparedStatement stmtInsertGhost = conn.prepareStatement(qInsertGhost);
+                     PreparedStatement stmtInsertTakes = conn.prepareStatement(qInsertTakes)) {
+                     
+                    for (String courseId : completedCourseIds) {
+                        stmtCheckGhost.setString(1, courseId);
+                        boolean ghostExists = false;
+                        try (ResultSet rs = stmtCheckGhost.executeQuery()) {
+                            if (rs.next() && rs.getInt(1) > 0) {
+                                ghostExists = true;
+                            }
+                        }
+                        
+                        if (!ghostExists) {
+                            stmtInsertGhost.setString(1, courseId);
+                            stmtInsertGhost.executeUpdate();
+                        }
+                        
+                        stmtInsertTakes.setString(1, id);
+                        stmtInsertTakes.setString(2, courseId);
+                        stmtInsertTakes.executeUpdate();
+                    }
+                }
+            }
+            conn.commit();
+        } catch (SQLException e) {
+            if (conn != null) {
+                try { conn.rollback(); } catch (SQLException ex) {}
+            }
+            throw e;
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                } catch (SQLException ex) {}
+            }
         }
     }
 

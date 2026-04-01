@@ -1,0 +1,1 @@
+SELECT s.ID, s.name, s.current_semester, COUNT(t.course_id) AS history_count FROM Student s LEFT JOIN Takes t ON s.ID = t.ID WHERE s.current_semester  GROUP BY s.ID, s.name, s.current_semester ORDER BY s.ID; 

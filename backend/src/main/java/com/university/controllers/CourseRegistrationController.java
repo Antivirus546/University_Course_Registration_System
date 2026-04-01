@@ -44,23 +44,27 @@ public class CourseRegistrationController {
     }
 
     @PostMapping("/students")
-    public ResponseEntity<?> registerStudent(@RequestBody Map<String, String> request) {
-        String id = request.get("id");
-        String name = request.get("name");
-        String branch = request.get("branchName");
+    public ResponseEntity<?> registerStudent(@RequestBody Map<String, Object> request) {
+        String id = (String) request.get("id");
+        String name = (String) request.get("name");
+        String branch = (String) request.get("branchName");
         
         if (id == null || name == null || branch == null || request.get("semester") == null) {
             return ResponseEntity.badRequest().body(Map.of("message", "All fields are required"));
         }
 
         try {
-            int semester = Integer.parseInt(request.get("semester"));
-            dao.registerStudent(id, name, branch, semester);
+            int semester = Integer.parseInt(request.get("semester").toString());
+            List<String> completedCourseIds = null;
+            if (request.get("completedCourseIds") instanceof List) {
+                completedCourseIds = (List<String>) request.get("completedCourseIds");
+            }
+            dao.registerStudent(id, name, branch, semester, completedCourseIds);
             return ResponseEntity.ok(Map.of("message", "Student Registered Successfully!"));
         } catch (NumberFormatException e) {
             return ResponseEntity.badRequest().body(Map.of("message", "Semester must be a number"));
         } catch (SQLException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Registration Failed: " + e.getMessage()));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("message", "Database Error: " + e.getMessage()));
         }
     }
 

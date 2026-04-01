@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Toaster } from 'react-hot-toast';
 import Dashboard from './components/Dashboard';
-import RegisterForm from './components/RegisterForm';
 import AdminPortal from './components/AdminPortal';
 import { api } from './api';
 import toast from 'react-hot-toast';
@@ -11,7 +10,7 @@ import './App.css';
 function App() {
   const [studentId, setStudentId] = useState('');
   const [currentSemester, setCurrentSemester] = useState(1);
-  const [viewMode, setViewMode] = useState('login'); // 'login', 'register', 'dashboard', 'admin'
+  const [viewMode, setViewMode] = useState('login'); // 'login', 'dashboard', 'admin', 'admin_login'
   const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = async (e) => {
@@ -111,10 +110,7 @@ function App() {
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] border border-indigo-500/10 rounded-full animate-[spin_60s_linear_infinite]"></div>
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] border border-indigo-500/20 rounded-full animate-[spin_40s_linear_infinite_reverse]"></div>
 
-      {viewMode === 'register' ? (
-        <RegisterForm onCancel={() => setViewMode('login')} />
-      ) : (
-        <div className="bg-slate-800/80 backdrop-blur-xl p-8 rounded-2xl shadow-2xl border border-slate-700/80 w-full max-w-md relative z-10 animate-in fade-in slide-in-from-top-4 duration-500 hover:shadow-indigo-500/20 hover:border-indigo-500/40">
+      <div className="bg-slate-800/80 backdrop-blur-xl p-8 rounded-2xl shadow-2xl border border-slate-700/80 w-full max-w-md relative z-10 animate-in fade-in slide-in-from-top-4 duration-500 hover:shadow-indigo-500/20 hover:border-indigo-500/40">
           
           <div className="text-center mb-8">
             <div className="bg-indigo-500/10 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-indigo-500/20 shadow-inner group transition-transform hover:scale-105">
@@ -158,12 +154,9 @@ function App() {
           </form>
 
           <div className="mt-8 pt-6 border-t border-slate-700/50 flex flex-col space-y-4">
-             <button
-                onClick={() => setViewMode('register')}
-                className="text-sm font-medium text-slate-400 hover:text-indigo-400 transition-colors"
-             >
-               Don't have an account? <span className="text-white hover:underline">Register</span>
-             </button>
+             <div className="text-center text-sm font-medium text-slate-400">
+                New students must contact an Administrator to register.
+             </div>
              <button
                onClick={attemptAdminLogin}
                className="text-[10px] text-slate-600 uppercase tracking-widest hover:text-slate-400 transition-colors opacity-50 hover:opacity-100"
@@ -173,7 +166,6 @@ function App() {
              </button>
           </div>
         </div>
-      )}
     </div>
   )
 }

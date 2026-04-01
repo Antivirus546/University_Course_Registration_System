@@ -12,11 +12,11 @@ export const api = {
     return data;
   },
 
-  register: async (id, name, branchName, semester) => {
+  register: async (id, name, branchName, semester, completedCourseIds = []) => {
     const res = await fetch(`${API_BASE}/students`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id, name, branchName, semester: semester.toString() })
+      body: JSON.stringify({ id, name, branchName, semester: semester.toString(), completedCourseIds })
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || 'Registration failed');

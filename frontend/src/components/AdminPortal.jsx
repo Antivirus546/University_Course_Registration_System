@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { api } from '../api';
 import toast from 'react-hot-toast';
-import { ShieldCheck, CalendarPlus, Users, BookOpen } from 'lucide-react';
+import { ShieldCheck, CalendarPlus, Users, BookOpen, UserPlus } from 'lucide-react';
 
 const DEPARTMENTS = [
   'Computer Science',
@@ -13,9 +13,23 @@ const DEPARTMENTS = [
   'Mechatronics'
 ];
 
+const BRANCHES = [
+  'B.Tech Computer Science & Engg',
+  'B.Tech Data Science & Engg',
+  'B.Tech Information Technology',
+  'B.Tech Electronics & Communication Engg',
+  'B.Tech Electrical & Electronics Engg',
+  'B.Tech Mechanical Engg',
+  'B.Tech Civil Engg',
+  'B.Tech Chemical Engg',
+  'B.Tech Mechatronics',
+  'B.Tech Biotechnology'
+];
+
 export default function AdminPortal() {
-  const [activeTab, setActiveTab] = useState('add'); // 'add', 'students', 'courses'
+  const [activeTab, setActiveTab] = useState('addStudent'); // 'add', 'students', 'courses', 'addStudent'
   const [formData, setFormData] = useState({ courseId: '', title: '', deptName: DEPARTMENTS[0], credits: 3, semesterType: 1, prereqId: '' });
+  const [addStudentData, setAddStudentData] = useState({ id: '', name: '', branchName: BRANCHES[0], semester: 1, completedCourseIds: [] });
   const [allCourses, setAllCourses] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   
@@ -77,6 +91,24 @@ export default function AdminPortal() {
     }
   };
 
+  const handleAddStudentSubmit = async (e) => {
+    e.preventDefault();
+    if (!addStudentData.id || !addStudentData.name) {
+      toast.error('Please fill out all required fields');
+      return;
+    }
+    try {
+      setIsLoading(true);
+      await api.register(addStudentData.id, addStudentData.name, addStudentData.branchName, addStudentData.semester, addStudentData.completedCourseIds);
+      toast.success(`Student ${addStudentData.id} Registered Successfully!`, { icon: '✅' });
+      setAddStudentData({ id: '', name: '', branchName: BRANCHES[0], semester: 1, completedCourseIds: [] });
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-6 max-w-4xl mx-auto border border-emerald-500/20 bg-emerald-500/5 rounded-2xl p-8 relative overflow-hidden animate-in fade-in zoom-in-95 duration-500">
       <div className="absolute top-0 right-0 bg-emerald-500/10 px-4 py-1 text-emerald-400 text-xs font-bold rounded-bl-xl flex items-center">
@@ -91,6 +123,12 @@ export default function AdminPortal() {
           <p className="text-slate-400 text-sm mt-1">Manage courses and monitor student enrollments</p>
         </div>
         <div className="flex space-x-2 bg-slate-800/80 p-1 rounded-lg border border-slate-700">
+          <button 
+            onClick={() => setActiveTab('addStudent')}
+            className={`px-4 py-2 text-sm font-medium rounded-md transition-colors flex items-center ${activeTab === 'addStudent' ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700'}`}
+          >
+            <UserPlus className="w-4 h-4 mr-2" /> Add Student
+          </button>
           <button 
             onClick={() => setActiveTab('add')}
             className={`px-4 py-2 text-sm font-medium rounded-md transition-colors flex items-center ${activeTab === 'add' ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700'}`}
@@ -111,6 +149,101 @@ export default function AdminPortal() {
           </button>
         </div>
       </div>
+
+      {activeTab === 'addStudent' && (
+        <form onSubmit={handleAddStudentSubmit} className="space-y-5 bg-slate-800/80 border border-slate-700 p-6 rounded-xl shadow-lg">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+             <div>
+               <label className="block text-sm font-semibold text-slate-400 mb-1">Student ID</label>
+               <input
+                 type="text"
+                 className="w-full px-4 py-2 bg-slate-900/60 border border-slate-700/80 rounded-lg focus:ring-2 focus:ring-emerald-500/80 transition-all text-slate-200 text-sm uppercase"
+                 required
+                 value={addStudentData.id}
+                 onChange={(e) => setAddStudentData({...addStudentData, id: e.target.value})}
+                 placeholder="e.g. S020"
+               />
+             </div>
+             
+             <div>
+               <label className="block text-sm font-semibold text-slate-400 mb-1">Full Name</label>
+               <input
+                 type="text"
+                 className="w-full px-4 py-2 bg-slate-900/60 border border-slate-700/80 rounded-lg focus:ring-2 focus:ring-emerald-500/80 transition-all text-slate-200 text-sm"
+                 required
+                 value={addStudentData.name}
+                 onChange={(e) => setAddStudentData({...addStudentData, name: e.target.value})}
+                 placeholder="John Doe"
+               />
+             </div>
+
+             <div>
+               <label className="block text-sm font-semibold text-slate-400 mb-1">Branch</label>
+               <select
+                 className="w-full px-4 py-2 bg-slate-900/60 border border-slate-700/80 rounded-lg focus:ring-2 focus:ring-emerald-500/80 transition-all text-slate-200 text-sm"
+                 value={addStudentData.branchName}
+                 onChange={(e) => setAddStudentData({...addStudentData, branchName: e.target.value})}
+               >
+                 {BRANCHES.map(b => <option key={b} value={b}>{b}</option>)}
+               </select>
+             </div>
+
+             <div>
+               <label className="block text-sm font-semibold text-slate-400 mb-1">Target Semester</label>
+               <select
+                 className="w-full px-4 py-2 bg-slate-900/60 border border-slate-700/80 rounded-lg focus:ring-2 focus:ring-emerald-500/80 transition-all text-slate-200 text-sm font-bold text-emerald-300"
+                 value={addStudentData.semester}
+                 onChange={(e) => {
+                   const newSem = parseInt(e.target.value);
+                   setAddStudentData({...addStudentData, semester: newSem, completedCourseIds: newSem === 1 ? [] : addStudentData.completedCourseIds});
+                 }}
+               >
+                 {[1, 2, 3, 4, 5, 6, 7, 8].map(sem => (
+                    <option key={sem} value={sem}>Semester {sem}</option>
+                 ))}
+               </select>
+             </div>
+          </div>
+
+          {addStudentData.semester > 1 && (
+            <div className="mt-4 p-4 border border-emerald-500/30 bg-emerald-500/5 rounded-xl">
+              <h3 className="text-sm font-bold text-emerald-400 mb-2">Advanced Standing Check</h3>
+              <p className="text-xs text-slate-400 mb-4">Select prerequisite courses the student has already completed.</p>
+              <div className="max-h-48 overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-2 pr-2">
+                {allCourses.map(c => (
+                  <label key={c.courseId} className="flex items-center space-x-3 p-2 rounded hover:bg-slate-700/50 cursor-pointer border border-transparent hover:border-slate-600 transition-all">
+                    <input 
+                      type="checkbox"
+                      className="form-checkbox h-4 w-4 text-emerald-500 rounded border-slate-600 bg-slate-900 focus:ring-emerald-500 focus:ring-offset-slate-800"
+                      checked={addStudentData.completedCourseIds.includes(c.courseId)}
+                      onChange={(e) => {
+                        const isChecked = e.target.checked;
+                        setAddStudentData(prev => ({
+                          ...prev,
+                          completedCourseIds: isChecked 
+                            ? [...prev.completedCourseIds, c.courseId]
+                            : prev.completedCourseIds.filter(id => id !== c.courseId)
+                        }));
+                      }}
+                    />
+                    <span className="text-sm text-slate-300 font-medium truncate">
+                      {c.courseId} <span className="text-slate-500 font-normal">— {c.title}</span>
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-4 rounded-lg transition-all duration-300 transform hover:-translate-y-0.5 shadow-lg shadow-emerald-600/30 mt-4"
+          >
+            {isLoading ? 'Processing...' : 'Register Student'}
+          </button>
+        </form>
+      )}
 
       {activeTab === 'add' && (
         <form onSubmit={handleSubmit} className="space-y-5 bg-slate-800/80 border border-slate-700 p-6 rounded-xl shadow-lg">
